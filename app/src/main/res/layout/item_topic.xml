@@ -8,7 +8,6 @@
         android:id="@+id/topic_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:text="Hello topic"
         android:textSize="20sp" />
@@ -18,7 +17,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:onClick="deleteTopic"
         android:text="Supprimer" />
 

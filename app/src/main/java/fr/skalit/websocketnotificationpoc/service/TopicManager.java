@@ -1,10 +1,10 @@
-package fr.skalit.websocketnotificationpoc;
+package fr.skalit.websocketnotificationpoc.service;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -14,7 +14,7 @@ public class TopicManager {
     private static final String TAG = "TopicManager";
     private static final String TOPICS_KEY = "topics";
 
-    private SharedPreferences sharedPreferences;
+    private final SharedPreferences sharedPreferences;
 
     public TopicManager(SharedPreferences prefs) {
         this.sharedPreferences = prefs;
@@ -26,12 +26,25 @@ public class TopicManager {
         Set<String> topicSet = getSet();
 
         if (topicSet != null) {
-            // lister les codes regates existant
             topicList.addAll(topicSet);
         } else {
             topicList.add("no topic found");
         }
         return topicList;
+    }
+
+    public String listAsJsonArray() {
+        StringBuilder stringJsonArray = new StringBuilder("");
+        stringJsonArray.append("[");
+        Iterator<String> iterator = this.list().iterator();
+        while(iterator.hasNext()) {
+            stringJsonArray.append("\"").append(iterator.next()).append("\"");
+            if(iterator.hasNext()) {
+                stringJsonArray.append(",");
+            }
+        }
+        stringJsonArray.append("]");
+        return stringJsonArray.toString();
     }
 
     // TODO ajouter contrainte sur format du topic
@@ -42,7 +55,7 @@ public class TopicManager {
         if (topicSet == null) {
             // creation d'une nouvelle liste
             // stocker une liste de code dans une propriété
-            topicSet = new HashSet<String>();
+            topicSet = new HashSet<>();
         }
         // on ajoute à la liste existante
         topicSet.add(topic);
@@ -56,8 +69,9 @@ public class TopicManager {
 
     private void addSet(Set<String> topicSet) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
         editor.putStringSet(TOPICS_KEY, topicSet);
-        editor.commit();
+        editor.apply();
     }
 
     public void delete(String topic) {
