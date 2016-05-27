@@ -13,6 +13,9 @@ import java.util.Set;
 public class TopicManager {
     private static final String TAG = "TopicManager";
     private static final String TOPICS_KEY = "topics";
+    private static final String RECEIVE_ALERT_KEY = "receive-alert";
+    private static final String RECEIVE_ALERT_ON = "true";
+    private static final String RECEIVE_ALERT_OFF = "false";
 
     private final SharedPreferences sharedPreferences;
 
@@ -78,5 +81,16 @@ public class TopicManager {
         Set<String> topicSet = getSet();
         topicSet.remove(topic);
         addSet(topicSet);
+    }
+
+    public Boolean getReceiveAlertPref() {
+        return Boolean.valueOf(sharedPreferences.getString(RECEIVE_ALERT_KEY, RECEIVE_ALERT_ON));
+    }
+
+    public void setReceiveAlertPref(Boolean receiveAlertChoice) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
+        editor.putString(RECEIVE_ALERT_KEY, receiveAlertChoice.toString());
+        editor.apply();
     }
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">WebSocketNotificationPoc</string>
+    <string name="check_message_button">Check new alert</string>
+    <string name="receive_alert">Recevoir des alertes</string>
 </resources>

@@ -21,4 +21,8 @@ public interface TopicWebApiIntf {
     // ex: topic?where={"id":["codeA","codeB"]}
     @GET("/topic")
     Call<List<Topic>> topicListWhere(@Query("where") String inFilter);
+
+    // get topic by name
+    @GET("/topic")
+    Call<List<Topic>> topicByName(@Query("name") String name);
 }

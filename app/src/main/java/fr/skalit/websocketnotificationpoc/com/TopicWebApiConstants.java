@@ -3,7 +3,7 @@ package fr.skalit.websocketnotificationpoc.com;
 /**
  * Created by pascalvincent on 21/05/2016.
  */
-class TopicWebApiConstants {
+public class TopicWebApiConstants {
 
     private static final String APP_DOMAIN_URL = "wsnotiflab-c9lab2os.rhcloud.com";
     private static final int APP_WEBSOCKET_PORT = 8000;

@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="fr.skalit.websocketnotificationpoc">
 
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name="WsNotifApp"
@@ -18,6 +17,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="fr.skalit.websocketnotificationpoc.service.AlertService"
+            android:enabled="true"
+            android:exported="false"
+            android:icon="@drawable/ic_action_play_over_video"
+            android:permission="fr.skalit.websocketnotificationpoc.service.AlertService" />
+
     </application>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <permission android:name="fr.skalit.websocketnotificationpoc.service.AlertService" />
+    <uses-permission android:name="fr.skalit.websocketnotificationpoc.service.AlertService" />
 
 </manifest>
