@@ -56,9 +56,9 @@ public class AlertService extends Service {
                 } else if (action.equals("SUBSCRIBE")) {
                     Log.d(TAG, "subscribe action");
                     subscribe(intent.getStringExtra("topicId"), intent.getStringExtra("topicName"));
-                } else if (action.equals("UNSUBSCRIBE")) {
+                } else if (action.equals("UNSUBSCRIBE_ALL")) {
                     Log.d(TAG, "unsubscribe action");
-                    unsubscribe(intent.getStringExtra("topicName"));
+                    unsubscribeAll();
                 } else {
                     Log.d(TAG, "nothing to do for action : " + action);
                 }
@@ -126,6 +126,8 @@ public class AlertService extends Service {
                     // Pass the Notification to the NotificationManager:
                     mNotificationManager.notify(MY_NOTIFICATION_ID,
                             notificationBuilder.build());
+
+                    // TODO cumuler les notifications
                 }
             };
         }
@@ -208,9 +210,9 @@ public class AlertService extends Service {
         }
     }
 
-    private void unsubscribe(String topicName) {
-        // TODO
+    private void unsubscribeAll() {
         // stop listening to topic event
+        Log.d(TAG, "unsubscribe to all");
         socket.off(APP_MODEL, onNewAlerts);
     }
 

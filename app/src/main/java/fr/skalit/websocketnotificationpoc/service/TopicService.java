@@ -40,10 +40,10 @@ public class TopicService {
      */
     public void release() {
         activity = null;
-        if(getTopicListCall != null) {
+        if (getTopicListCall != null) {
             getTopicListCall.cancel();
         }
-        if(getTopicByNameCall != null) {
+        if (getTopicByNameCall != null) {
             getTopicByNameCall.cancel();
         }
     }
@@ -89,7 +89,7 @@ public class TopicService {
         });
     }
 
-    public void getTopicByName(String name) {
+    public void checkTopicAndSubscribe(String name) {
 
         getTopicByNameCall = topicWebApiService.topicByName(name);
 
@@ -100,28 +100,31 @@ public class TopicService {
 
                 Log.d(TAG, "getTopicListCall : response is back");
 
+                Topic topic = null;
+
                 if (response.isSuccessful()) {
                     // request successful (status code 200, 201)
                     List<Topic> topicList = response.body();
                     if (topicList != null && !topicList.isEmpty()) {
-                        Topic topic = topicList.get(0);
-                        Log.d(TAG, "getTopicByName : " + topic.toString());
-                        activity.subscribeViaWS(topic);
+                        topic = topicList.get(0);
+                        Log.d(TAG, "checkTopicAndSubscribe : " + topic.toString());
                     } else {
                         Log.d(TAG, "empty result response");
                     }
                 } else {
                     //request not successful (like 400,401,403 etc)
-                    Log.d(TAG, "getTopicByName - response code : " + response.code());
+                    Log.d(TAG, "checkTopicAndSubscribe - response code : " + response.code());
                 }
+
+                activity.saveTopicAndSubscribe(topic);
             }
 
             @Override
             public void onFailure(Call<List<Topic>> call, Throwable t) {
-                Log.e(TAG, "getTopicByName error : " + t.getMessage());
+                Log.e(TAG, "checkTopicAndSubscribe error : " + t.getMessage());
+                activity.saveTopicAndSubscribe(null);
             }
 
         });
-
     }
 }

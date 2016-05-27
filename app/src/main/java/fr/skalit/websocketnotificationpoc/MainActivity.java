@@ -1,13 +1,9 @@
 package fr.skalit.websocketnotificationpoc;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.os.IBinder;
-import android.os.Messenger;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +16,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -62,23 +59,30 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onStart ...");
 
         //initialize the service
-        if(topicService == null){
+        if (topicService == null) {
             topicService = new TopicService();
         }
         topicService.initialize(this);
 
-        topicManager = new TopicManager(sharedPreferences);
-
-        // TODO restauration des abonnements
+        if(topicManager == null) {
+            topicManager = new TopicManager(sharedPreferences);
+        }
 
         // retrieve receive alert choice
         boolean receiveAlertPref = topicManager.getReceiveAlertPref();
         // set checkbox state
         CheckBox checkBox = (CheckBox) findViewById(R.id.receiveAlertPref);
         checkBox.setChecked(receiveAlertPref);
+
         // start service if needed
-        if(receiveAlertPref) {
+        if (receiveAlertPref) {
             startAlertService();
+        }
+
+        // restore subscription
+        // TODO previous start service need to be completed !!
+        for(String topicName : topicManager.list()) {
+            topicService.checkTopicAndSubscribe(topicName);
         }
 
         updateUI();
@@ -106,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onStop ...");
         //don't forget to release your service to avoir memory leak
         topicService.release();
-        topicService=null;
+        topicService = null;
     }
 
     // TODO onPause
@@ -145,10 +149,11 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                String topic = String.valueOf(topicEditText.getText());
-                                Log.d(TAG, "Topic to add: " + topic);
-                                subscribe(topic);
-                                updateUI();
+                                String topicName = String.valueOf(topicEditText.getText());
+                                Log.d(TAG, "Topic to add: " + topicName);
+                                // get topic object from remote server and subscribe
+                                topicService.checkTopicAndSubscribe(topicName);
+                                // TODO ajouter une animation pendant recherche du topic
                             }
                         })
                         .setNegativeButton("Annuler", null)
@@ -177,15 +182,17 @@ public class MainActivity extends AppCompatActivity {
             mAdapter.addAll(topicList);
             mAdapter.notifyDataSetChanged();
         }
-
     }
 
     public void deleteTopic(View view) {
         View parent = (View) view.getParent();
         TextView topicTextView = (TextView) parent.findViewById(R.id.topic_title);
-        String topic = String.valueOf(topicTextView.getText());
+        String topicName = String.valueOf(topicTextView.getText());
 
-        topicManager.delete(topic);
+        topicManager.delete(topicName);
+
+        unsubscribeViaAlertService(topicName);
+
         updateUI();
     }
 
@@ -193,35 +200,42 @@ public class MainActivity extends AppCompatActivity {
         topicService.getTopicListByNames();
     }
 
-    public void subscribe(String topicName) {
+    public void saveTopicAndSubscribe(Topic topic) {
+        if (topic == null) {
+            Toast.makeText(this, "Code non trouvé", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // save topic
         // TODO faire la sauvegarde des topic en dehors du thread UI (async ?)
-        topicManager.add(topicName);
+        topicManager.add(topic.getName());
 
-        // get topic object from remote server and subscribe
-        topicService.getTopicByName(topicName);
+        updateUI();
 
-        // TODO faire un appel async et chainer avec la souscription par le web socket manager
+        subscribeViaAlertService(topic);
+
     }
 
-    public void subscribeViaWS(Topic topic) {
+    private void subscribeViaAlertService(Topic topic) {
+        // send a subscribe intent to the alert service
         Intent intent = new Intent(this, AlertService.class);
         intent.setAction("SUBSCRIBE");
         intent.putExtra("topicId", topic.getId());
         intent.putExtra("topicName", topic.getName());
         startService(intent);
-        // topicWebSocketManager.subscribe(topic);
     }
 
+    private void unsubscribeViaAlertService(String topicName) {
+        Intent intent = new Intent(this, AlertService.class);
+        intent.setAction("UNSUBSCRIBE");
+        intent.putExtra("topicName", topicName);
+        startService(intent);
+    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy ...");
     }
-
-    // TODO créer un service pour écouter les réceptions de topics
-    // le service doit faire ses traitements dans un thread à part
-
 
     public void onReceiveAlertClicked(View view) {
         boolean checked = ((CheckBox) view).isChecked();
@@ -230,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
         topicManager.setReceiveAlertPref(checked);
 
         // start/stop service
-        if(checked) {
+        if (checked) {
             // start service
             startAlertService();
         } else {
