@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -132,6 +133,8 @@ public class AlertService extends Service {
             };
         }
 
+        boolean isStarted = false;
+
         if (socket == null) {
 
             try {
@@ -172,10 +175,24 @@ public class AlertService extends Service {
 
                 socket.connect();
 
+                isStarted = true;
+
             } catch (URISyntaxException e) {
                 Log.e(TAG, "socket create : " + e.getMessage());
+                isStarted = false;
             }
+
+        } else {
+            isStarted = socket.connected();
         }
+
+        sendStartedBroadcast(isStarted);
+    }
+
+    private void sendStartedBroadcast (boolean isStarted){
+        Intent intent = new Intent ("ALERT_SERVICE_STARTED_BROADCAST");
+        intent.putExtra("STARTED", isStarted);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Nullable

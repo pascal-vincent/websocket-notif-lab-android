@@ -3,7 +3,9 @@ package fr.skalit.websocketnotificationpoc;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,9 +36,10 @@ public class MainActivity extends AppCompatActivity {
     public TopicService topicService;
     public TopicManager topicManager;
 
-    Boolean receiveAlertDefault = true;
-
     SharedPreferences sharedPreferences;
+
+    AlertServiceLocalBroadCastReceiver mLocalBroadCastReceiver;
+    IntentFilter mAlertServiceStatusIntentFilter = new IntentFilter("ALERT_SERVICE_STARTED_BROADCAST");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +53,11 @@ public class MainActivity extends AppCompatActivity {
 
         mTopicListView = (ListView) findViewById(R.id.list_topic);
 
+        mLocalBroadCastReceiver = new AlertServiceLocalBroadCastReceiver(this);
+
+        // register the broadcast receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mLocalBroadCastReceiver,mAlertServiceStatusIntentFilter);
+
     }
 
     @Override
@@ -58,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "onStart ...");
 
+        // TODO use an intentService for retrofit call
         //initialize the service
         if (topicService == null) {
             topicService = new TopicService();
@@ -72,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         boolean receiveAlertPref = topicManager.getReceiveAlertPref();
         // set checkbox state
         CheckBox checkBox = (CheckBox) findViewById(R.id.receiveAlertPref);
+        assert checkBox != null;
         checkBox.setChecked(receiveAlertPref);
 
         // start service if needed
@@ -79,27 +89,21 @@ public class MainActivity extends AppCompatActivity {
             startAlertService();
         }
 
-        // restore subscription
-        // TODO previous start service need to be completed !!
-        for(String topicName : topicManager.list()) {
-            topicService.checkTopicAndSubscribe(topicName);
-        }
-
         updateUI();
 
     }
 
     private void startAlertService() {
+        Log.d(TAG, "starting alert service");
         Intent intent = new Intent(this, AlertService.class);
         intent.setAction("START");
-        Log.d(TAG, "starting alert service");
         startService(intent);
     }
 
     private void stopAlertService() {
+        Log.d(TAG, "stopping alert service");
         Intent intent = new Intent(this, AlertService.class);
         intent.setAction("STOP");
-        Log.d(TAG, "stopping alert service");
         stopService(intent);
     }
 
@@ -191,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
 
         topicManager.delete(topicName);
 
+        // TODO need to find a way to unsubscribe only one topic
         unsubscribeViaAlertService(topicName);
 
         updateUI();
@@ -252,6 +257,15 @@ public class MainActivity extends AppCompatActivity {
             stopAlertService();
         }
 
+    }
+
+    // called when the AlertService is started
+    public void restoreSubscription() {
+        Log.d(TAG, "restoring subscription");
+        // restore subscription
+        for(String topicName : topicManager.list()) {
+            topicService.checkTopicAndSubscribe(topicName);
+        }
     }
 
 
