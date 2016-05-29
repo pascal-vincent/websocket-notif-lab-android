@@ -40,13 +40,11 @@ class TopicMessage {
 
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
+        String s = ("content : " + this.content) +
+                ", date : " + this.date +
+                ", priority" + this.priority;
 
-        stringBuilder.append("content : " + this.content);
-        stringBuilder.append(", date : " + this.date);
-        stringBuilder.append(", priority" + this.priority);
-
-        return stringBuilder.toString();
+        return s;
     }
 
 }

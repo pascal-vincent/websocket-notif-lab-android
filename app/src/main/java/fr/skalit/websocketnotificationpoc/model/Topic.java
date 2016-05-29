@@ -74,15 +74,20 @@ public class Topic {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("name : " + this.name);
-        stringBuilder.append(", id : " + this.id);
-        stringBuilder.append(", createdAt : " + this.createdAt);
+        stringBuilder
+                .append("name : ")
+                .append(this.name)
+                .append(", id : ")
+                .append(this.id)
+                .append(", createdAt : ")
+                .append(this.createdAt);
 
         if(this.messages != null) {
             stringBuilder.append(", messages : [ ");
             for(TopicMessage topicMessage : this.messages) {
-                stringBuilder.append(topicMessage.toString());
-                stringBuilder.append(", ");
+                stringBuilder
+                        .append(topicMessage.toString())
+                        .append(", ");
             }
             stringBuilder.append("]");
         }

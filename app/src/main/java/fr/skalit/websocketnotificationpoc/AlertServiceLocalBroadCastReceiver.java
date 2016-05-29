@@ -13,7 +13,7 @@ import com.squareup.haha.perflib.Main;
 public class AlertServiceLocalBroadCastReceiver extends BroadcastReceiver {
     private static final String TAG = AlertServiceLocalBroadCastReceiver.class.getSimpleName();
 
-    MainActivity activity;
+    private MainActivity activity;
 
     public AlertServiceLocalBroadCastReceiver(MainActivity activity) {
         super();
@@ -27,6 +27,7 @@ public class AlertServiceLocalBroadCastReceiver extends BroadcastReceiver {
             if(action != null && !action.isEmpty()) {
                 if(action.equals("ALERT_SERVICE_STARTED_BROADCAST")) {
                     if(intent.getBooleanExtra("STARTED", false) == true) {
+                        Log.d(TAG, "Alert service started");
                         activity.restoreSubscription();
                     } else {
                         Log.d(TAG, "Alert service not started");

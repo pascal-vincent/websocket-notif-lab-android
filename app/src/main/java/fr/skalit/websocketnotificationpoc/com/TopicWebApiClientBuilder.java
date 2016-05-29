@@ -23,8 +23,7 @@ public class TopicWebApiClientBuilder {
                 //You need to add a converter if you want your Json to be automagicly convert into the object
                 .addConverterFactory(MoshiConverterFactory.create())
                 .build();
-        TopicWebApiIntf topicWebApiClient = ra.create(TopicWebApiIntf.class);
-        return topicWebApiClient;
+        return ra.create(TopicWebApiIntf.class);
     }
 
 }

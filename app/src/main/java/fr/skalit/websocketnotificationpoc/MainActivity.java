@@ -91,6 +91,13 @@ public class MainActivity extends AppCompatActivity {
 
         updateUI();
 
+        // TODO show socket state
+        // TODO add a reconnect button if not connected
+
+        // TODO show the last topic message with date and hour
+
+        // TODO show previous message for topic : add a menu for a long press on a topic ; delete, show messages
+
     }
 
     private void startAlertService() {
@@ -112,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
 
         Log.d(TAG, "onStop ...");
-        //don't forget to release your service to avoir memory leak
+
         topicService.release();
         topicService = null;
     }
@@ -195,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
 
         topicManager.delete(topicName);
 
-        // TODO need to find a way to unsubscribe only one topic
         unsubscribeViaAlertService(topicName);
 
         updateUI();
@@ -224,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
         // send a subscribe intent to the alert service
         Intent intent = new Intent(this, AlertService.class);
         intent.setAction("SUBSCRIBE");
-        intent.putExtra("topicId", topic.getId());
         intent.putExtra("topicName", topic.getName());
         startService(intent);
     }
@@ -267,8 +272,4 @@ public class MainActivity extends AppCompatActivity {
             topicService.checkTopicAndSubscribe(topicName);
         }
     }
-
-
-    // afficher plusieurs notifications à la suite : plusieurs ID de notif
-
 }

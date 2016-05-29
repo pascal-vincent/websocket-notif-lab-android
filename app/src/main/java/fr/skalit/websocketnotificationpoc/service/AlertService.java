@@ -26,7 +26,7 @@ import io.socket.emitter.Emitter;
  */
 public class AlertService extends Service {
 
-    public static final String TAG = AlertService.class.getSimpleName();
+    private static final String TAG = AlertService.class.getSimpleName();
     private Socket socket;
 
     // Notification ID to allow for future updates
@@ -34,7 +34,7 @@ public class AlertService extends Service {
 
     private static final String APP_MODEL = "topic";
 
-    Emitter.Listener onNewAlerts = null;
+    private Emitter.Listener onNewAlerts = null;
 
     @Override
     public void onCreate() {
@@ -56,9 +56,12 @@ public class AlertService extends Service {
                     initialize();
                 } else if (action.equals("SUBSCRIBE")) {
                     Log.d(TAG, "subscribe action");
-                    subscribe(intent.getStringExtra("topicId"), intent.getStringExtra("topicName"));
-                } else if (action.equals("UNSUBSCRIBE_ALL")) {
+                    subscribe(intent.getStringExtra("topicName"));
+                } else if (action.equals("UNSUBSCRIBE")){
                     Log.d(TAG, "unsubscribe action");
+                    unsubscribe(intent.getStringExtra("topicName"));
+                } else if (action.equals("UNSUBSCRIBE_ALL")) {
+                    Log.d(TAG, "unsubscribe all action");
                     unsubscribeAll();
                 } else {
                     Log.d(TAG, "nothing to do for action : " + action);
@@ -133,8 +136,6 @@ public class AlertService extends Service {
             };
         }
 
-        boolean isStarted = false;
-
         if (socket == null) {
 
             try {
@@ -148,6 +149,7 @@ public class AlertService extends Service {
                     @Override
                     public void call(Object... args) {
                         Log.d(TAG, "websocket connected");
+                        sendStartedBroadcast(true);
                     }
 
                 }).on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
@@ -155,6 +157,7 @@ public class AlertService extends Service {
                     @Override
                     public void call(Object... args) {
                         Log.d(TAG, "websocket connection error");
+                        sendStartedBroadcast(false);
                     }
 
                 }).on(Socket.EVENT_CONNECT_TIMEOUT, new Emitter.Listener() {
@@ -162,6 +165,8 @@ public class AlertService extends Service {
                     @Override
                     public void call(Object... args) {
                         Log.d(TAG, "websocket timeout");
+
+                        // TODO deal with time out : try to reconnect ..
                     }
 
                 }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
@@ -169,24 +174,18 @@ public class AlertService extends Service {
                     @Override
                     public void call(Object... args) {
                         Log.d(TAG, "websocket disconnected");
+                        // TODO try to reconnect ?
                     }
 
                 }).on(APP_MODEL, onNewAlerts);
 
                 socket.connect();
 
-                isStarted = true;
-
             } catch (URISyntaxException e) {
                 Log.e(TAG, "socket create : " + e.getMessage());
-                isStarted = false;
             }
-
-        } else {
-            isStarted = socket.connected();
         }
 
-        sendStartedBroadcast(isStarted);
     }
 
     private void sendStartedBroadcast (boolean isStarted){
@@ -201,11 +200,7 @@ public class AlertService extends Service {
         return null;
     }
 
-    public void subscribe(String topicId, String topicName) {
-        if (topicId == null || topicId.isEmpty()) {
-            Log.d(TAG, "no topic id !");
-            return;
-        }
+    private void subscribe(String topicName) {
         if (topicName == null || topicName.isEmpty()) {
             Log.d(TAG, "no topic name !");
             return;
@@ -213,7 +208,7 @@ public class AlertService extends Service {
 
         JSONObject json = new JSONObject();
         try {
-            json.put("url", "/" + APP_MODEL + "/" + topicId);
+            json.put("url", "/" + APP_MODEL + "?where={\"name\":\"" + topicName + "\"}");
             json.put("method", "GET");
         } catch (JSONException e) {
             Log.e(TAG, "subscribe json error " + e.getMessage());
@@ -223,12 +218,37 @@ public class AlertService extends Service {
             Log.d(TAG, "websocket subscribing to " + topicName);
             socket.emit("get", json);
         } else {
-            Log.e(TAG, "socket not connected");
+            Log.e(TAG, "subscribe error : socket not connected");
+            // TODO local broadcast the error
+        }
+    }
+
+    private void unsubscribe(String topicName) {
+        if (topicName == null || topicName.isEmpty()) {
+            Log.d(TAG, "no topic name !");
+            return;
+        }
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("url", "/" + APP_MODEL + "/unsubscribe/" + topicName);
+            json.put("method", "GET");
+        } catch (JSONException e) {
+            Log.e(TAG, "subscribe json error " + e.getMessage());
+        }
+
+        if (socket.connected()) {
+            Log.d(TAG, "websocket unsubscribing to " + topicName);
+            socket.emit("get", json);
+        } else {
+            Log.e(TAG, "unsubscribe error : socket not connected");
+            // TODO local broadcast the error
         }
     }
 
     private void unsubscribeAll() {
-        // stop listening to topic event
+        // stop listening to all topic event
+        // TODO unsubscribe each topic
         Log.d(TAG, "unsubscribe to all");
         socket.off(APP_MODEL, onNewAlerts);
     }
