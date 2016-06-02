@@ -32,4 +32,15 @@
         android:text="@string/receive_alert"
         android:onClick="onReceiveAlertClicked"/>
 
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/socketStatus"
+        android:textOn="connected"
+        android:textOff="disconnected"
+        android:layout_below="@id/receiveAlertPref"
+        android:onClick="onSocketConnectClicked"/>
+
+
+
 </RelativeLayout>

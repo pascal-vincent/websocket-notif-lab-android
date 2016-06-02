@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.ToggleButton;
 
 import com.squareup.haha.perflib.Main;
 
@@ -12,6 +13,8 @@ import com.squareup.haha.perflib.Main;
  */
 public class AlertServiceLocalBroadCastReceiver extends BroadcastReceiver {
     private static final String TAG = AlertServiceLocalBroadCastReceiver.class.getSimpleName();
+
+    private static final boolean CONNECTED = true;
 
     private MainActivity activity;
 
@@ -22,14 +25,16 @@ public class AlertServiceLocalBroadCastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(intent != null) {
+        if (intent != null) {
             String action = intent.getAction();
-            if(action != null && !action.isEmpty()) {
-                if(action.equals("ALERT_SERVICE_STARTED_BROADCAST")) {
-                    if(intent.getBooleanExtra("STARTED", false) == true) {
+            if (action != null && !action.isEmpty()) {
+                if (action.equals("ALERT_SERVICE_CONNECTED_BROADCAST")) {
+                    if (intent.getBooleanExtra("CONNECTED", !CONNECTED) == CONNECTED) {
                         Log.d(TAG, "Alert service started");
+                        activity.setSocketStatus(CONNECTED);
                         activity.restoreSubscription();
                     } else {
+                        activity.setSocketStatus(!CONNECTED);
                         Log.d(TAG, "Alert service not started");
                     }
                 }

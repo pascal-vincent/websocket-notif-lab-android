@@ -54,10 +54,13 @@ public class AlertService extends Service {
                 if (action.equals("START")) {
                     Log.d(TAG, "starting service");
                     initialize();
+                } else if (action.equals("STOP")) {
+                    Log.d(TAG, "stopping service");
+                    stopService();
                 } else if (action.equals("SUBSCRIBE")) {
                     Log.d(TAG, "subscribe action");
                     subscribe(intent.getStringExtra("topicName"));
-                } else if (action.equals("UNSUBSCRIBE")){
+                } else if (action.equals("UNSUBSCRIBE")) {
                     Log.d(TAG, "unsubscribe action");
                     unsubscribe(intent.getStringExtra("topicName"));
                 } else if (action.equals("UNSUBSCRIBE_ALL")) {
@@ -149,7 +152,7 @@ public class AlertService extends Service {
                     @Override
                     public void call(Object... args) {
                         Log.d(TAG, "websocket connected");
-                        sendStartedBroadcast(true);
+                        sendConnectedBroadcast(true);
                     }
 
                 }).on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
@@ -157,7 +160,7 @@ public class AlertService extends Service {
                     @Override
                     public void call(Object... args) {
                         Log.d(TAG, "websocket connection error");
-                        sendStartedBroadcast(false);
+                        sendConnectedBroadcast(false);
                     }
 
                 }).on(Socket.EVENT_CONNECT_TIMEOUT, new Emitter.Listener() {
@@ -166,7 +169,7 @@ public class AlertService extends Service {
                     public void call(Object... args) {
                         Log.d(TAG, "websocket timeout");
 
-                        // TODO deal with time out : try to reconnect ..
+                        // TODO deal with time out : try to reconnect ?
                     }
 
                 }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
@@ -174,7 +177,7 @@ public class AlertService extends Service {
                     @Override
                     public void call(Object... args) {
                         Log.d(TAG, "websocket disconnected");
-                        // TODO try to reconnect ?
+                        sendConnectedBroadcast(false);
                     }
 
                 }).on(APP_MODEL, onNewAlerts);
@@ -188,9 +191,9 @@ public class AlertService extends Service {
 
     }
 
-    private void sendStartedBroadcast (boolean isStarted){
-        Intent intent = new Intent ("ALERT_SERVICE_STARTED_BROADCAST");
-        intent.putExtra("STARTED", isStarted);
+    private void sendConnectedBroadcast(boolean isConnected) {
+        Intent intent = new Intent("ALERT_SERVICE_CONNECTED_BROADCAST");
+        intent.putExtra("CONNECTED", isConnected);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -214,12 +217,13 @@ public class AlertService extends Service {
             Log.e(TAG, "subscribe json error " + e.getMessage());
         }
 
-        if (socket.connected()) {
+        if (socket != null && socket.connected()) {
             Log.d(TAG, "websocket subscribing to " + topicName);
             socket.emit("get", json);
         } else {
             Log.e(TAG, "subscribe error : socket not connected");
-            // TODO local broadcast the error
+            // local broadcast the error
+            sendConnectedBroadcast(false);
         }
     }
 
@@ -237,12 +241,13 @@ public class AlertService extends Service {
             Log.e(TAG, "subscribe json error " + e.getMessage());
         }
 
-        if (socket.connected()) {
+        if (socket != null && socket.connected()) {
             Log.d(TAG, "websocket unsubscribing to " + topicName);
             socket.emit("get", json);
         } else {
             Log.e(TAG, "unsubscribe error : socket not connected");
-            // TODO local broadcast the error
+            // local broadcast the error
+            sendConnectedBroadcast(false);
         }
     }
 
@@ -256,6 +261,10 @@ public class AlertService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "destroying service");
+        stopService();
+    }
+
+    private void stopService() {
         if (socket != null) {
             socket.disconnect();
             socket = null;

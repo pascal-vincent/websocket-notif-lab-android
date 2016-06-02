@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
 
     AlertServiceLocalBroadCastReceiver mLocalBroadCastReceiver;
-    IntentFilter mAlertServiceStatusIntentFilter = new IntentFilter("ALERT_SERVICE_STARTED_BROADCAST");
+    IntentFilter mAlertServiceStatusIntentFilter = new IntentFilter("ALERT_SERVICE_CONNECTED_BROADCAST");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         mLocalBroadCastReceiver = new AlertServiceLocalBroadCastReceiver(this);
 
         // register the broadcast receiver
-        LocalBroadcastManager.getInstance(this).registerReceiver(mLocalBroadCastReceiver,mAlertServiceStatusIntentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mLocalBroadCastReceiver, mAlertServiceStatusIntentFilter);
 
     }
 
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         }
         topicService.initialize(this);
 
-        if(topicManager == null) {
+        if (topicManager == null) {
             topicManager = new TopicManager(sharedPreferences);
         }
 
@@ -90,9 +91,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateUI();
-
-        // TODO show socket state
-        // TODO add a reconnect button if not connected
 
         // TODO show the last topic message with date and hour
 
@@ -252,24 +250,33 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "receive alert : " + checked);
         // update preference
         topicManager.setReceiveAlertPref(checked);
-
-        // start/stop service
-        if (checked) {
-            // start service
-            startAlertService();
-        } else {
-            // stop service
-            stopAlertService();
-        }
-
     }
 
     // called when the AlertService is started
     public void restoreSubscription() {
         Log.d(TAG, "restoring subscription");
         // restore subscription
-        for(String topicName : topicManager.list()) {
+        for (String topicName : topicManager.list()) {
             topicService.checkTopicAndSubscribe(topicName);
         }
+    }
+
+    public void onSocketConnectClicked(View view) {
+        boolean isConnected = ((ToggleButton) view).isChecked();
+        Log.d(TAG, "toggle websocket connection " + isConnected);
+
+        if (!isConnected) {
+            // if turning off disconnect the socket
+            stopAlertService();
+        } else {
+            // turning on ...
+            startAlertService();
+        }
+
+    }
+
+    public void setSocketStatus(boolean connected) {
+        ToggleButton toggleButton = (ToggleButton) findViewById(R.id.socketStatus);
+        toggleButton.setChecked(connected);
     }
 }
