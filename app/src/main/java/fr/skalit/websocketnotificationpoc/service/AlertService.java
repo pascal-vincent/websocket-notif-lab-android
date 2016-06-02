@@ -88,53 +88,14 @@ public class AlertService extends Service {
                 @Override
                 public void call(final Object... args) {
 
-                    // TODO à faire dans un thread à part
-                    // IntentService ?
-
                     Log.d(TAG, "websocket received alerts event");
 
                     JSONObject payload = (JSONObject) args[0];
-                    String verb;
-                    JSONObject data;
-                    JSONObject message;
-                    String content;
-                    try {
-                        verb = payload.getString("verb");
-                        data = payload.getJSONObject("data");
-                        message = data.getJSONObject("message");
-                        content = message.getString("content");
-                    } catch (JSONException e) {
-                        Log.d(TAG, "onNewAlert JSONException : " + e.getMessage());
-                        return;
-                    }
 
-                    // log
-                    Log.d(TAG, "alerts - " + verb + " : " + data);
-
-                    // notify !
-                    // Build the Notification
-                    Context context = getApplicationContext();
-                    // Notification Text Elements
-                    CharSequence tickerText = "Topic alert : received a new alert !";
-                    CharSequence contentTitle = "Topic alert";
-                    CharSequence contentText = content;
-
-                    Notification.Builder notificationBuilder = new Notification.Builder(context)
-                            .setTicker(tickerText)
-                            .setSmallIcon(R.drawable.ic_stat_alert)
-                            .setAutoCancel(true)
-                            .setContentTitle(contentTitle)
-                            .setContentText(contentText);
-
-                    // Get the NotificationManager
-                    NotificationManager mNotificationManager = (NotificationManager) context
-                            .getSystemService(Context.NOTIFICATION_SERVICE);
-
-                    // Pass the Notification to the NotificationManager:
-                    mNotificationManager.notify(MY_NOTIFICATION_ID,
-                            notificationBuilder.build());
-
-                    // TODO cumuler les notifications
+                    Intent intent = new Intent(getApplicationContext(), AlertMessageManager.class);
+                    intent.setAction("NOTIFY");
+                    intent.putExtra("payload", payload.toString());
+                    startService(intent);
                 }
             };
         }

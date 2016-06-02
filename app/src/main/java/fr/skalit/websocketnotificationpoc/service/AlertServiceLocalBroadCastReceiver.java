@@ -1,12 +1,11 @@
-package fr.skalit.websocketnotificationpoc;
+package fr.skalit.websocketnotificationpoc.service;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.ToggleButton;
 
-import com.squareup.haha.perflib.Main;
+import fr.skalit.websocketnotificationpoc.MainActivity;
 
 /**
  * Created by pascalvincent on 28/05/2016.

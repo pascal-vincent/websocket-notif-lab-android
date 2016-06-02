@@ -25,6 +25,10 @@
             android:icon="@drawable/ic_action_play_over_video"
             android:permission="fr.skalit.websocketnotificationpoc.service.AlertService" />
 
+        <service
+            android:name=".service.AlertMessageManager"
+            android:exported="false" />
+
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

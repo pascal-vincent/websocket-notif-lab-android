@@ -25,6 +25,7 @@ import java.util.ArrayList;
 
 import fr.skalit.websocketnotificationpoc.model.Topic;
 import fr.skalit.websocketnotificationpoc.service.AlertService;
+import fr.skalit.websocketnotificationpoc.service.AlertServiceLocalBroadCastReceiver;
 import fr.skalit.websocketnotificationpoc.service.TopicManager;
 import fr.skalit.websocketnotificationpoc.service.TopicService;
 
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "onStart ...");
 
-        // TODO use an intentService for retrofit call
+        // TODO use an intentService for retrofit calls
         //initialize the service
         if (topicService == null) {
             topicService = new TopicService();
