@@ -35,13 +35,13 @@ public class MainActivity extends AppCompatActivity {
     private ListView mTopicListView;
     private ArrayAdapter<String> mAdapter;
 
-    public TopicService topicService;
+    private TopicService topicService;
     public TopicManager topicManager;
 
-    SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences;
 
-    AlertServiceLocalBroadCastReceiver mLocalBroadCastReceiver;
-    IntentFilter mAlertServiceStatusIntentFilter = new IntentFilter("ALERT_SERVICE_CONNECTED_BROADCAST");
+    private AlertServiceLocalBroadCastReceiver mLocalBroadCastReceiver;
+    private final IntentFilter mAlertServiceStatusIntentFilter = new IntentFilter("ALERT_SERVICE_CONNECTED_BROADCAST");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
         mTopicListView = (ListView) findViewById(R.id.list_topic);
 
-        mLocalBroadCastReceiver = new AlertServiceLocalBroadCastReceiver(this);
-
-        // register the broadcast receiver
-        LocalBroadcastManager.getInstance(this).registerReceiver(mLocalBroadCastReceiver, mAlertServiceStatusIntentFilter);
-
     }
 
     @Override
@@ -68,13 +63,14 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "onStart ...");
 
-        // TODO use an intentService for retrofit calls
-        //initialize the service
+        // TODO use an intentService for retrofit calls ?
+        //initialize the http client
         if (topicService == null) {
             topicService = new TopicService();
         }
         topicService.initialize(this);
 
+        // initialize the data store manager
         if (topicManager == null) {
             topicManager = new TopicManager(sharedPreferences);
         }
@@ -129,13 +125,36 @@ public class MainActivity extends AppCompatActivity {
     // Release system resources, such as broadcast receivers, handles to sensors
     // or any resources that may affect battery life while your activity is paused and the user does not need them.
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause ...");
 
-    // TODO onResume
+        // unregister the broadcast receiver
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocalBroadCastReceiver);
+        // release object
+        mLocalBroadCastReceiver = null;
+    }
+
+
     // initialize what was released in onPause
-    //
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume ...");
+
+        mLocalBroadCastReceiver = new AlertServiceLocalBroadCastReceiver(this);
+
+        // register the broadcast receiver
+        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(mLocalBroadCastReceiver, mAlertServiceStatusIntentFilter);
+    }
 
     // TODO onRestart ..
-
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart ...");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -244,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy ...");
+        mLocalBroadCastReceiver = null;
     }
 
     public void onReceiveAlertClicked(View view) {
@@ -278,6 +298,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setSocketStatus(boolean connected) {
         ToggleButton toggleButton = (ToggleButton) findViewById(R.id.socketStatus);
+        assert toggleButton != null;
         toggleButton.setChecked(connected);
     }
 }

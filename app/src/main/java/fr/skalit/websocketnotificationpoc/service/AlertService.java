@@ -1,9 +1,6 @@
 package fr.skalit.websocketnotificationpoc.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -15,7 +12,6 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
-import fr.skalit.websocketnotificationpoc.R;
 import fr.skalit.websocketnotificationpoc.com.TopicWebApiConstants;
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -51,23 +47,30 @@ public class AlertService extends Service {
             String action = intent.getAction();
             if (action != null && !action.isEmpty()) {
 
-                if (action.equals("START")) {
-                    Log.d(TAG, "starting service");
-                    initialize();
-                } else if (action.equals("STOP")) {
-                    Log.d(TAG, "stopping service");
-                    stopService();
-                } else if (action.equals("SUBSCRIBE")) {
-                    Log.d(TAG, "subscribe action");
-                    subscribe(intent.getStringExtra("topicName"));
-                } else if (action.equals("UNSUBSCRIBE")) {
-                    Log.d(TAG, "unsubscribe action");
-                    unsubscribe(intent.getStringExtra("topicName"));
-                } else if (action.equals("UNSUBSCRIBE_ALL")) {
-                    Log.d(TAG, "unsubscribe all action");
-                    unsubscribeAll();
-                } else {
-                    Log.d(TAG, "nothing to do for action : " + action);
+                switch (action) {
+                    case "START":
+                        Log.d(TAG, "starting service");
+                        initialize();
+                        break;
+                    case "STOP":
+                        Log.d(TAG, "stopping service");
+                        stopService();
+                        break;
+                    case "SUBSCRIBE":
+                        Log.d(TAG, "subscribe action");
+                        subscribe(intent.getStringExtra("topicName"));
+                        break;
+                    case "UNSUBSCRIBE":
+                        Log.d(TAG, "unsubscribe action");
+                        unsubscribe(intent.getStringExtra("topicName"));
+                        break;
+                    case "UNSUBSCRIBE_ALL":
+                        Log.d(TAG, "unsubscribe all action");
+                        unsubscribeAll();
+                        break;
+                    default:
+                        Log.d(TAG, "nothing to do for action : " + action);
+                        break;
                 }
 
             } else {

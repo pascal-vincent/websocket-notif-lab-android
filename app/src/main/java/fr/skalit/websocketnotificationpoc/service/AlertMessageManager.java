@@ -61,7 +61,7 @@ public class AlertMessageManager extends IntentService {
 
     private String getAlertMessage(JSONObject json) {
 
-        JSONObject payload = (JSONObject) json;
+        JSONObject payload = json;
         String verb;
         JSONObject data;
         JSONObject message;
@@ -89,14 +89,13 @@ public class AlertMessageManager extends IntentService {
         // Notification Text Elements
         CharSequence tickerText = "Topic alert : received a new alert !";
         CharSequence contentTitle = "Topic alert";
-        CharSequence contentText = content;
 
         Notification.Builder notificationBuilder = new Notification.Builder(context)
                 .setTicker(tickerText)
                 .setSmallIcon(R.drawable.ic_stat_alert)
                 .setAutoCancel(true)
                 .setContentTitle(contentTitle)
-                .setContentText(contentText);
+                .setContentText(content);
 
         // Get the NotificationManager
         NotificationManager mNotificationManager = (NotificationManager) context

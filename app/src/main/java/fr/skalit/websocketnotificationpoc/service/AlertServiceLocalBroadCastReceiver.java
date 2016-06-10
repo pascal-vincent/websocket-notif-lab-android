@@ -28,7 +28,7 @@ public class AlertServiceLocalBroadCastReceiver extends BroadcastReceiver {
             String action = intent.getAction();
             if (action != null && !action.isEmpty()) {
                 if (action.equals("ALERT_SERVICE_CONNECTED_BROADCAST")) {
-                    if (intent.getBooleanExtra("CONNECTED", !CONNECTED) == CONNECTED) {
+                    if (intent.getBooleanExtra("CONNECTED", !CONNECTED)) {
                         Log.d(TAG, "Alert service started");
                         activity.setSocketStatus(CONNECTED);
                         activity.restoreSubscription();
@@ -44,4 +44,11 @@ public class AlertServiceLocalBroadCastReceiver extends BroadcastReceiver {
             Log.d(TAG, "no intent");
         }
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        this.activity = null;
+    }
+
 }

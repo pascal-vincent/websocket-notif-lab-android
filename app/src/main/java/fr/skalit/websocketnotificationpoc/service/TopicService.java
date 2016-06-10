@@ -23,6 +23,7 @@ public class TopicService {
 
     private TopicWebApiIntf topicWebApiService;
 
+
     private Call<List<Topic>> getTopicListCall = null;
     private Call<List<Topic>> getTopicByNameCall = null;
 
@@ -46,6 +47,12 @@ public class TopicService {
         if (getTopicByNameCall != null) {
             getTopicByNameCall.cancel();
         }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        release();
     }
 
     /**

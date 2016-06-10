@@ -89,8 +89,11 @@ public class TopicManager {
 
     public void setReceiveAlertPref(Boolean receiveAlertChoice) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear();
+        // remove previous choice
+        editor.remove(RECEIVE_ALERT_KEY);
+        // add current choice
         editor.putString(RECEIVE_ALERT_KEY, receiveAlertChoice.toString());
+        // commit
         editor.apply();
     }
 }

@@ -40,11 +40,9 @@ class TopicMessage {
 
     @Override
     public String toString() {
-        String s = ("content : " + this.content) +
+        return ("content : " + this.content) +
                 ", date : " + this.date +
                 ", priority" + this.priority;
-
-        return s;
     }
 
 }
